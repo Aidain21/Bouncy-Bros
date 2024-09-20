@@ -11,15 +11,17 @@ public class PlayerController : MonoBehaviour
     public float GroundTestHeight = 0.1f;
     public LayerMask platformLayerMask;
     public bool canJump;
+    public bool letGO;
 
     private void Awake()
     {
         playerCol = GetComponent<BoxCollider2D>();
         playerRB = GetComponent<Rigidbody2D>();
         canJump = true;
+
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         GetComponent<Rigidbody2D>().velocity = new Vector2(Input.GetAxisRaw("Horizontal") * moveSpeed, GetComponent<Rigidbody2D>().velocity.y);
         if (Input.GetKey(KeyCode.A))
@@ -30,11 +32,18 @@ public class PlayerController : MonoBehaviour
         {
             GetComponent<SpriteRenderer>().flipX = true;
         }
-        if (Input.GetKeyDown(KeyCode.Space) && canJump)
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
             //float dirY = GetComponent<Rigidbody2D>().velocity.y;
-            canJump = false;
+            letGO = false;
             playerRB.velocity = new Vector3(GetComponent<Rigidbody2D>().velocity.x, jumpSpeed);
+        }
+        if (Input.GetKeyUp(KeyCode.Space) && !letGO)
+        {
+            //float dirY = GetComponent<Rigidbody2D>().velocity.y;
+
+            playerRB.velocity = new Vector3(GetComponent<Rigidbody2D>().velocity.x, GetComponent<Rigidbody2D>().velocity.y * 0.25f);
+            letGO = true;
         }
     }
 
