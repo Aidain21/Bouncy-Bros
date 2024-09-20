@@ -10,11 +10,13 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public Rigidbody2D playerRB;
     public float GroundTestHeight = 0.1f;
     public LayerMask platformLayerMask;
+    public bool canJump;
 
     private void Awake()
     {
         playerCol = GetComponent<BoxCollider2D>();
         playerRB = GetComponent<Rigidbody2D>();
+        canJump = true;
     }
 
     private void FixedUpdate()
@@ -28,9 +30,10 @@ public class PlayerController : MonoBehaviour
         {
             GetComponent<SpriteRenderer>().flipX = true;
         }
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && canJump)
         {
             //float dirY = GetComponent<Rigidbody2D>().velocity.y;
+            canJump = false;
             playerRB.velocity = new Vector3(GetComponent<Rigidbody2D>().velocity.x, jumpSpeed);
         }
     }
@@ -40,5 +43,10 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D raycastHit = Physics2D.BoxCast(playerCol.bounds.center, playerCol.bounds.size, 0f, Vector2.down, GroundTestHeight, platformLayerMask);
 
         return raycastHit.collider != null;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        canJump = true;
     }
 }
