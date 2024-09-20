@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     public float jumpSpeed = 6f;
     [HideInInspector] public BoxCollider2D playerCol;
     [HideInInspector] public Rigidbody2D playerRB;
+    public float GroundTestHeight = 0.1f;
+    public LayerMask platformLayerMask;
 
     private void Awake()
     {
@@ -31,5 +33,12 @@ public class PlayerController : MonoBehaviour
             //float dirY = GetComponent<Rigidbody2D>().velocity.y;
             playerRB.velocity = new Vector3(GetComponent<Rigidbody2D>().velocity.x, jumpSpeed);
         }
+    }
+
+    private bool IsGrounded()
+    {
+        RaycastHit2D raycastHit = Physics2D.BoxCast(playerCol.bounds.center, playerCol.bounds.size, 0f, Vector2.down, GroundTestHeight, platformLayerMask);
+
+        return raycastHit.collider != null;
     }
 }
