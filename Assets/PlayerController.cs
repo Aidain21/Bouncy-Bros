@@ -10,19 +10,30 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public Rigidbody2D playerRB;
     public float GroundTestHeight = 0.1f;
     public LayerMask platformLayerMask;
-    public bool canJump;
-    public bool letGO;
+    public float slamTimer;
+    public bool fromSpace;
 
     private void Awake()
     {
         playerCol = GetComponent<BoxCollider2D>();
         playerRB = GetComponent<Rigidbody2D>();
-        canJump = true;
-
+        slamTimer = 0;
     }
 
     private void Update()
     {
+        if (IsGrounded())
+        {
+            GetComponent<SpriteRenderer>().color = new Color32(121, 255, 212, 255);
+        }
+        else if (fromSpace)
+        {
+            GetComponent<SpriteRenderer>().color = Color.blue;
+        }
+        else
+        {
+            GetComponent<SpriteRenderer>().color = Color.red;
+        }
         GetComponent<Rigidbody2D>().velocity = new Vector2(Input.GetAxisRaw("Horizontal") * moveSpeed, GetComponent<Rigidbody2D>().velocity.y);
         if (Input.GetKey(KeyCode.A))
         {
@@ -35,15 +46,34 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
             //float dirY = GetComponent<Rigidbody2D>().velocity.y;
-            letGO = false;
             playerRB.velocity = new Vector3(GetComponent<Rigidbody2D>().velocity.x, jumpSpeed);
+            fromSpace = true;
         }
-        if (Input.GetKeyUp(KeyCode.Space) && !letGO)
+        
+        if (Input.GetKey(KeyCode.S) && !IsGrounded() && fromSpace)
         {
-            //float dirY = GetComponent<Rigidbody2D>().velocity.y;
+            slamTimer += Time.deltaTime;
+            playerRB.gravityScale = 3;
+        }
+        else if (slamTimer > 0 && IsGrounded()) 
+        {
+            playerRB.velocity = new Vector3(GetComponent<Rigidbody2D>().velocity.x, jumpSpeed + (slamTimer * 4.7f) * slamTimer*4.7f);
+            fromSpace = false;
 
-            playerRB.velocity = new Vector3(GetComponent<Rigidbody2D>().velocity.x, GetComponent<Rigidbody2D>().velocity.y * 0.25f);
-            letGO = true;
+
+            slamTimer = 0;
+            playerRB.gravityScale = 1;
+
+        }
+        else
+        {
+            slamTimer = 0;
+            playerRB.gravityScale = 1;
+        }
+
+        if (transform.position.y < -10)
+        {
+            transform.position = new Vector3(0, -3);
         }
     }
 
@@ -52,10 +82,5 @@ public class PlayerController : MonoBehaviour
         RaycastHit2D raycastHit = Physics2D.BoxCast(playerCol.bounds.center, playerCol.bounds.size, 0f, Vector2.down, GroundTestHeight, platformLayerMask);
 
         return raycastHit.collider != null;
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        canJump = true;
     }
 }
